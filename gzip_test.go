@@ -25,7 +25,7 @@ func TestLimitedW_Renew(t *testing.T) {
 			t.Fatal(err)
 		}
 		if ok, _ := limit.IsFull(); ok {
-			fullFile, err := limit.Renew(filepath.Join(dir, i+".gz"))
+			fullFile, err := limit.Renew()
 			if err != nil {
 				t.Fatal(err)
 			}

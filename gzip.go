@@ -3,7 +3,10 @@ package gzip
 import (
 	"bufio"
 	"compress/gzip"
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 type R struct {
@@ -93,6 +96,7 @@ func NewLimitedWriter(path string, maxLine int64) (limit *LimitedW, err error) {
 type LimitedW struct {
 	*W
 	MaxLine, CurLine int64
+	FileSeq          int
 }
 
 // IsFull if the file is beyond of maxLine return true.
@@ -113,13 +117,15 @@ func (w *LimitedW) Write(s string) (n int, err error) {
 // Renew close the old and create a new one
 // the param path is the new file path
 // the return value string is the old file path
-func (w *LimitedW) Renew(path string) (old string, err error) {
+func (w *LimitedW) Renew() (old string, err error) {
 	old = w.Path
 	if err = w.Close(); err != nil {
 		return
 	}
 
-	newW, err := NewWriter(path)
+	ext := filepath.Ext(old)
+	newPath := strings.Split(old, ext)[0] + fmt.Sprintf("-seq%d", w.FileSeq) + ext
+	newW, err := NewWriter(newPath)
 	if err != nil {
 		return
 	}
