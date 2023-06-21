@@ -41,9 +41,10 @@ func NewReader(path string) (*R, error) {
 }
 
 type W struct {
-	F  *os.File
-	Gf *gzip.Writer
-	Wf *bufio.Writer
+	Path string
+	F    *os.File
+	Gf   *gzip.Writer
+	Wf   *bufio.Writer
 }
 
 func (w W) Close() error {
@@ -53,10 +54,10 @@ func (w W) Close() error {
 	if err := w.Gf.Flush(); err != nil {
 		return err
 	}
-	if err := w.F.Close(); err != nil {
+	if err := w.Gf.Close(); err != nil {
 		return err
 	}
-	return w.Gf.Close()
+	return w.F.Close()
 }
 
 func (w W) Write(s string) (int, error) {
@@ -71,8 +72,59 @@ func NewWriter(path string) (*W, error) {
 
 	gf := gzip.NewWriter(f)
 	return &W{
-		F:  f,
-		Gf: gf,
-		Wf: bufio.NewWriter(gf),
+		Path: path,
+		F:    f,
+		Gf:   gf,
+		Wf:   bufio.NewWriter(gf),
 	}, nil
+}
+
+// NewLimitedW
+func NewLimitedW(path string, maxLine int64) (limit *LimitedW, err error) {
+	limit = new(LimitedW)
+	if limit.W, err = NewWriter(path); err != nil {
+		return
+	}
+	limit.MaxLine = maxLine
+	return
+}
+
+// LimitedW limited lines writer
+type LimitedW struct {
+	*W
+	MaxLine, CurLine int64
+}
+
+// IsFull if the file is beyond of maxLine return true.
+func (w *LimitedW) IsFull() (bool, error) {
+	return w.CurLine >= w.MaxLine, nil
+}
+
+// Write a line with counter
+func (w *LimitedW) Write(s string) (n int, err error) {
+	n, err = w.W.Write(s)
+	if err != nil {
+		return
+	}
+	w.CurLine++
+	return
+}
+
+// Renew close the old and create a new one
+// the param path is the new file path
+// the return value string is the old file path
+func (w *LimitedW) Renew(path string) (old string, err error) {
+	old = w.Path
+	if err = w.Close(); err != nil {
+		return
+	}
+
+	newW, err := NewWriter(path)
+	if err != nil {
+		return
+	}
+
+	w.W = newW
+	w.CurLine = 0
+	return
 }
