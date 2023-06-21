@@ -15,7 +15,7 @@ func TestLimitedW_Renew(t *testing.T) {
 	files := make([]string, 0, 4)
 	old := filepath.Join(dir, "0.gz")
 	files = append(files, old)
-	limit, err := NewLimitedW(old, 3)
+	limit, err := NewLimitedWriter(old, 3)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -79,8 +79,8 @@ func NewWriter(path string) (*W, error) {
 	}, nil
 }
 
-// NewLimitedW
-func NewLimitedW(path string, maxLine int64) (limit *LimitedW, err error) {
+// NewLimitedWriter
+func NewLimitedWriter(path string, maxLine int64) (limit *LimitedW, err error) {
 	limit = new(LimitedW)
 	if limit.W, err = NewWriter(path); err != nil {
 		return
