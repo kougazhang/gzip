@@ -83,11 +83,16 @@ func NewWriter(path string) (*W, error) {
 }
 
 // NewLimitedWriter
+// path: the first file, the file pattern of subsequence files would like xx-seq-%d.gz,
+// and the num would start from zero.
+// maxLine: the max lines of one file
 func NewLimitedWriter(path string, maxLine int64) (limit *LimitedW, err error) {
 	limit = new(LimitedW)
 	if limit.W, err = NewWriter(path); err != nil {
 		return
 	}
+	limit.ext = filepath.Ext(path)
+	limit.prefixPath = strings.Split(path, limit.ext)[0]
 	limit.MaxLine = maxLine
 	return
 }
@@ -97,6 +102,8 @@ type LimitedW struct {
 	*W
 	MaxLine, CurLine int64
 	FileSeq          int
+	prefixPath       string
+	ext              string
 }
 
 // IsFull if the file is beyond of maxLine return true.
@@ -123,12 +130,12 @@ func (w *LimitedW) Renew() (old string, err error) {
 		return
 	}
 
-	ext := filepath.Ext(old)
-	newPath := strings.Split(old, ext)[0] + fmt.Sprintf("-seq%d", w.FileSeq) + ext
+	newPath := w.prefixPath + fmt.Sprintf("-seq%d", w.FileSeq) + w.ext
 	newW, err := NewWriter(newPath)
 	if err != nil {
 		return
 	}
+	w.FileSeq++
 
 	w.W = newW
 	w.CurLine = 0
