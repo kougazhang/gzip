@@ -113,7 +113,7 @@ func (w *LimitedW) IsFull() (bool, error) {
 
 // Write a line with counter
 func (w *LimitedW) Write(s string) (n int, err error) {
-	n, err = w.W.Write(s)
+	n, err = w.W.Write(s + "\n")
 	if err != nil {
 		return
 	}
