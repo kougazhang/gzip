@@ -16,10 +16,10 @@ type R struct {
 }
 
 func (r R) Close() error {
-	if err := r.F.Close(); err != nil {
+	if err := r.Gf.Close(); err != nil {
 		return err
 	}
-	return r.Gf.Close()
+	return r.F.Close()
 }
 
 func (r R) ReadLine() (string, error) {
