@@ -7,6 +7,28 @@ import (
 	"testing"
 )
 
+func TestNewWriter(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	old := filepath.Join(dir, "0.gz")
+	write, err := NewWriter(old)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, i := range strings.Split("1,2,3,4,5,6,7,8,9,10", ",") {
+		_, err = write.Write(i)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err = write.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_ = os.Remove(old)
+}
+
 func TestLimitedW_Renew(t *testing.T) {
 	dir, err := os.Getwd()
 	if err != nil {
