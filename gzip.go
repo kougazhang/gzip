@@ -64,7 +64,7 @@ func (w W) Close() error {
 }
 
 func (w W) Write(s string) (int, error) {
-	return w.Wf.WriteString(s)
+	return w.Wf.WriteString(s + "\n")
 }
 
 func NewWriter(path string) (*W, error) {
