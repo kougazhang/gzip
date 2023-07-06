@@ -1,11 +1,50 @@
 package gzip
 
 import (
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestNewReader(t *testing.T) {
+	dir, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	old := filepath.Join(dir, "0.gz")
+	write, err := NewWriter(old)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, i := range strings.Split("1,2,3,4,5,6,7,8,9,10", ",") {
+		_, err = write.Write(i)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err = write.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	reader, err := NewReader(old)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for {
+		line, err := reader.ReadLine()
+		if err != nil {
+			if err == io.EOF {
+				_ = os.Remove(old)
+				return
+			}
+		}
+		fmt.Println("line: ", line)
+	}
+}
 
 func TestNewWriter(t *testing.T) {
 	dir, err := os.Getwd()

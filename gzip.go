@@ -23,7 +23,11 @@ func (r R) Close() error {
 }
 
 func (r R) ReadLine() (string, error) {
-	return r.Rf.ReadString('\n')
+	line, _, err := r.Rf.ReadLine()
+	if err != nil {
+		return "", err
+	}
+	return string(line), nil
 }
 
 func NewReader(path string) (*R, error) {
@@ -113,7 +117,7 @@ func (w *LimitedW) IsFull() (bool, error) {
 
 // Write a line with counter
 func (w *LimitedW) Write(s string) (n int, err error) {
-	n, err = w.W.Write(s + "\n")
+	n, err = w.W.Write(s)
 	if err != nil {
 		return
 	}
